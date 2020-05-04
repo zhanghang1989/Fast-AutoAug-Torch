@@ -25,6 +25,12 @@ from encoding.nn import LabelSmoothing, NLLMultiLabelSmooth
 from encoding.utils import (accuracy, AverageMeter, MixUpWrapper, LR_Scheduler, torch_dist_sum)
 from utils import get_transform
 
+try:
+    import apex
+    from apex import amp
+except ModuleNotFoundError:
+    print('please install amp if using float16 training')
+
 class Options():
     def __init__(self):
         # data settings
@@ -41,7 +47,7 @@ class Options():
                             help='mixup (default eta: 0.0)')
         parser.add_argument('--auto-policy', type=str, default=None,
                             help='path to auto augment policy')
-        #parser.add_argument('--rand-aug', action='store_true', 
+        #parser.add_argument('--rand-aug', action='store_true',
         #                    default=False, help='random augment')
         # model params 
         parser.add_argument('--model', type=str, default='resnet50',
@@ -56,6 +62,8 @@ class Options():
         parser.add_argument('--final-drop', type=float, default=0,
                             help='final dropout prob. default is 0.')
         # training params
+        parser.add_argument('--amp', action='store_true',
+                            default=False, help='using amp')
         parser.add_argument('--batch-size', type=int, default=128, metavar='N',
                             help='batch size for training (default: 128)')
         parser.add_argument('--test-batch-size', type=int, default=256, metavar='N',
@@ -196,8 +204,6 @@ def main_worker(gpu, ngpus_per_node, args):
 
     model.cuda(args.gpu)
     criterion.cuda(args.gpu)
-    model = DistributedDataParallel(model, device_ids=[args.gpu])
-
     # criterion and optimizer
     if args.no_bn_wd:
         parameters = model.named_parameters()
@@ -219,6 +225,18 @@ def main_worker(gpu, ngpus_per_node, args):
                                     lr=args.lr,
                                     momentum=args.momentum,
                                     weight_decay=args.weight_decay)
+    if args.amp:
+        #optimizer = amp_handle.wrap_optimizer(optimizer)
+        model, optimizer = amp.initialize(model, optimizer, opt_level='O2')
+
+    if args.amp:
+        #from apex import amp
+        DDP = apex.parallel.DistributedDataParallel
+        model = DDP(model, delay_allreduce=True)
+    else:
+        DDP = DistributedDataParallel
+        model = DDP(model, device_ids=[args.gpu])
+
     # check point
     if args.resume is not None:
         if os.path.isfile(args.resume):
@@ -231,6 +249,8 @@ def main_worker(gpu, ngpus_per_node, args):
             acclist_val = checkpoint['acclist_val']
             model.module.load_state_dict(checkpoint['state_dict'])
             optimizer.load_state_dict(checkpoint['optimizer'])
+            if args.amp:
+                amp.load_state_dict(checkpoint['amp'])
             if args.gpu == 0:
                 print("=> loaded checkpoint '{}' (epoch {})"
                 .format(args.resume, checkpoint['epoch']))
@@ -256,7 +276,11 @@ def main_worker(gpu, ngpus_per_node, args):
             optimizer.zero_grad()
             output = model(data)
             loss = criterion(output, target)
-            loss.backward()
+            if args.amp:
+                with amp.scale_loss(loss, optimizer) as scaled_loss:
+                    scaled_loss.backward()
+            else:
+                loss.backward()
             optimizer.step()
 
             if not args.mixup:
@@ -312,14 +336,17 @@ def main_worker(gpu, ngpus_per_node, args):
             if top1_acc > best_pred:
                 best_pred = top1_acc 
                 is_best = True
-            encoding.utils.save_checkpoint({
+            state_dict = {
                 'epoch': epoch,
                 'state_dict': model.module.state_dict(),
                 'optimizer': optimizer.state_dict(),
                 'best_pred': best_pred,
                 'acclist_train':acclist_train,
                 'acclist_val':acclist_val,
-                }, args=args, is_best=is_best)
+                }
+            if args.amp:
+                state_dict['amp'] = amp.state_dict()
+            encoding.utils.save_checkpoint(state_dict, args=args, is_best=is_best)
 
     if args.export:
         if args.gpu == 0:
