@@ -23,6 +23,7 @@ import autotorch as at
 import encoding
 from encoding.nn import LabelSmoothing, NLLMultiLabelSmooth
 from encoding.utils import (accuracy, AverageMeter, MixUpWrapper, LR_Scheduler, torch_dist_sum)
+from utils import get_transform
 
 class Options():
     def __init__(self):
@@ -43,7 +44,7 @@ class Options():
         #parser.add_argument('--rand-aug', action='store_true', 
         #                    default=False, help='random augment')
         # model params 
-        parser.add_argument('--model', type=str, default='densenet',
+        parser.add_argument('--model', type=str, default='resnet50',
                             help='network model type (default: densenet)')
         parser.add_argument('--pretrained', action='store_true', 
                             default=False, help='load pretrianed mode')
@@ -136,7 +137,7 @@ def main_worker(gpu, ngpus_per_node, args):
     torch.cuda.manual_seed(args.seed)
     cudnn.benchmark = True
     # init dataloader
-    transform_train, transform_val = encoding.transforms.get_transform(
+    transform_train, transform_val = get_transform(
             args.dataset, args.base_size, args.crop_size)
     if args.auto_policy is not None:
         print(f'Using auto_policy: {args.auto_policy}')
@@ -349,5 +350,6 @@ def main_worker(gpu, ngpus_per_node, args):
             }, args=args, is_best=False)
 
 if __name__ == "__main__":
+    os.environ['PYTHONWARNINGS'] = 'ignore:semaphore_tracker:UserWarning'
     main()
 

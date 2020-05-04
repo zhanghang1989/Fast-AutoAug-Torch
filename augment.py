@@ -1,10 +1,17 @@
+##+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+## Created by: Hang Zhang
+## Email: zhanghang0704@gmail.com
+## Copyright (c) 2020
+##
+## LICENSE file in the root directory of this source tree 
+##+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 from encoding.transforms.autoaug import *
 
 def Posterize2(*args, **kwargs):
     return Posterize(*args, **kwargs)
 
-def augment_list():  # 16 oeprations and their ranges
+def augment_list():  # oeprations and their ranges
     l = [
         (ShearX, -0.3, 0.3),  # 0
         (ShearY, -0.3, 0.3),  # 1
