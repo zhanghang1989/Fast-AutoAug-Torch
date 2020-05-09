@@ -47,6 +47,8 @@ class Options():
                             help='mixup (default eta: 0.0)')
         parser.add_argument('--auto-policy', type=str, default=None,
                             help='path to auto augment policy')
+        parser.add_argument('--rand-aug', action='store_true', 
+                            default=False, help='random augment')
         # model params 
         parser.add_argument('--model', type=str, default='resnet50',
                             help='network model type (default: densenet)')
@@ -150,6 +152,11 @@ def main_worker(gpu, ngpus_per_node, args):
         from augment import Augmentation
         auto_policy = Augmentation(at.load(args.auto_policy))
         transform_train.transforms.insert(0, auto_policy)
+    elif args.rand_aug:
+        print("Using Random Aug policy")
+        from encoding.transforms.autoaug import RandAugment
+        rand_aa_policy = RandAugment(2, 12)
+        transform_train.transforms.insert(0, rand_aa_policy)
 
     trainset = encoding.datasets.get_dataset(args.dataset, root=os.path.expanduser('~/.encoding/data'),
                                              transform=transform_train, train=True, download=True)
