@@ -34,6 +34,12 @@ from encoding.utils import (accuracy, AverageMeter, LR_Scheduler)
 from utils import get_transform, subsample_dataset
 from augment import Augmentation, augment_dict
 
+try:
+    import apex
+    from apex import amp
+except ModuleNotFoundError:
+    print('please install amp if using float16 training')
+
 def get_args():
     # data settings
     parser = argparse.ArgumentParser(description='FastAA-AutoTorch')
@@ -59,6 +65,8 @@ def get_args():
     parser.add_argument('--base-size', type=int, default=None,
                         help='base image size')
     # training hp
+    parser.add_argument('--amp', action='store_true',
+                        default=False, help='using amp')
     parser.add_argument('--lr', type=float, default=0.1,
                             help='learning rate (default: 0.1)')
     parser.add_argument('--momentum', type=float, default=0.9, 
@@ -92,6 +100,9 @@ def train_network(args, gpu_manager, split_idx, return_dict):
     model.cuda(gpu)
     criterion.cuda(gpu)
 
+    if args.amp:
+        model, optimizer = amp.initialize(model, optimizer, opt_level='O2')
+
     # init dataloader
     base_size = args.base_size if args.base_size is not None else int(1.0 * args.crop_size / 0.875)
     transform_train, _ = get_transform(
@@ -119,7 +130,11 @@ def train_network(args, gpu_manager, split_idx, return_dict):
             optimizer.zero_grad()
             output = model(data)
             loss = criterion(output, target)
-            loss.backward()
+            if args.amp:
+                with amp.scale_loss(loss, optimizer) as scaled_loss:
+                    scaled_loss.backward()
+            else:
+                loss.backward()
             optimizer.step()
 
     def validate(auto_policy):

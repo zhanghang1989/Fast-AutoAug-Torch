@@ -47,8 +47,6 @@ class Options():
                             help='mixup (default eta: 0.0)')
         parser.add_argument('--auto-policy', type=str, default=None,
                             help='path to auto augment policy')
-        #parser.add_argument('--rand-aug', action='store_true',
-        #                    default=False, help='random augment')
         # model params 
         parser.add_argument('--model', type=str, default='resnet50',
                             help='network model type (default: densenet)')
@@ -228,8 +226,6 @@ def main_worker(gpu, ngpus_per_node, args):
     if args.amp:
         #optimizer = amp_handle.wrap_optimizer(optimizer)
         model, optimizer = amp.initialize(model, optimizer, opt_level='O2')
-
-    if args.amp:
         #from apex import amp
         DDP = apex.parallel.DistributedDataParallel
         model = DDP(model, delay_allreduce=True)
