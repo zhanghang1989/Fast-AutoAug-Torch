@@ -75,6 +75,7 @@ def main():
         valset, batch_size=args.batch_size, shuffle=False,
         num_workers=args.workers, pin_memory=True if args.cuda else False)
     
+    model_kwargs = {}
     if args.rectify:
         model_kwargs['rectified_conv'] = True
         model_kwargs['rectify_avg'] = args.rectify_avg

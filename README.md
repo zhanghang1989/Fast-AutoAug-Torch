@@ -1,18 +1,38 @@
 # Fast-AutoAug-Torch
 
-Search for [Fast AutoAugment](https://arxiv.org/abs/1905.00397) using [AutoTorch](http://autotorch.org/). 
+Search for [Fast AutoAugment](https://arxiv.org/abs/1905.00397) using [AutoTorch](http://autotorch.org/). [RandAugment](https://arxiv.org/abs/1909.13719) is also implemented.
 
 | model | augment| epoch | Acc |
 |-------|--------|-------|-----|
 |ResNet-50| baseline | 120 | 76.48 |
-|ResNet-50| Fast AA | 270| 77.73|
-|ResNet-50| Rand AA | 270| |
+|ResNet-50| Fast AA | 120| 76.88 |
+|ResNet-50| baseline | 270| 77.17 |
+|ResNet-50| Fast AA | 270| 77.73 |
+|ResNet-50| Rand AA | 270| **77.97** |
+
+Training HP setting:
+``
+learning rate: 0.2,
+batch size: 512,
+weight decay: 1e-4,
+``
+
+Fast AA setting:
+``
+K=8, T=1, N=5,
+``
+40 subpolicies in total.
+
+RandAug setting:
+``
+n=2, m=12,
+``
 
 ## Quick Start
 ### Prepare dataset
 
 ```bash
-# assuming you have downloaded the dataset in the current folder
+# assuming you have downloaded the ImageNet dataset in the current folder
 python prepare_imagenet.py --download-dir ./
 ```
 
@@ -26,7 +46,10 @@ python search_policy.py --reduced-size 60000 --epochs 120 --nfolds 8 --num-trial
 ### Train with searched policy
 
 ```bash
-python train.py --dataset imagenet --model resnet50 --lr-scheduler cos --epochs 120 --checkname resnet50_check --lr 0.025 --batch-size 64 --auto-policy imagenet_policy.at
+python train.py --dataset imagenet --model resnet50 --lr-scheduler cos --epochs 270 --checkname resnet50_fast_aa --lr 0.025 --batch-size 64 --auto-policy imagenet_policy.at
 ```
 
-
+### Train with random AA
+```bash
+python train.py --dataset imagenet --model resnet50 --lr-scheduler cos --epochs 270 --checkname resnet50_rand_aug --lr 0.025 --batch-size 64 --rand-aug
+```
