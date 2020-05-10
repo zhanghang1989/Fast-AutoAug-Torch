@@ -2,13 +2,13 @@
 
 Search for [Fast AutoAugment](https://arxiv.org/abs/1905.00397) using [AutoTorch](http://autotorch.org/). [RandAugment](https://arxiv.org/abs/1909.13719) is also implemented.
 
-| model | augment| epoch | Acc |
-|-------|--------|-------|-----|
+| model | augment| epoch | Acc | Weights |
+|-------|--------|-------|-----|---------|
 |ResNet-50| baseline | 120 | 76.48 |
 |ResNet-50| Fast AA | 120| 76.88 |
 |ResNet-50| baseline | 270| 77.17 |
-|ResNet-50| Fast AA | 270| 77.73 |
-|ResNet-50| Rand AA | 270| **77.97** |
+|ResNet-50| Fast AA | 270| 77.73 | [link](https://hangzh.s3-us-west-1.amazonaws.com/others/resnet50_fast_aa-3342410e.pth) |
+|ResNet-50| Rand AA | 270| **77.97** | [link](https://hangzh.s3-us-west-1.amazonaws.com/others/resnet50_rand_aug-e38097c7.pth) |
 
 Training HP setting:
 ``
@@ -27,6 +27,7 @@ RandAug setting:
 ``
 n=2, m=12,
 ``
+
 
 ## Quick Start
 ### Prepare dataset
@@ -53,3 +54,4 @@ python train.py --dataset imagenet --model resnet50 --lr-scheduler cos --epochs 
 ```bash
 python train.py --dataset imagenet --model resnet50 --lr-scheduler cos --epochs 270 --checkname resnet50_rand_aug --lr 0.025 --batch-size 64 --rand-aug
 ```
+
