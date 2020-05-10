@@ -1,14 +1,22 @@
 # Fast-AutoAug-Torch
 
-Search for [Fast AutoAugment](https://arxiv.org/abs/1905.00397) using [AutoTorch](http://autotorch.org/). [RandAugment](https://arxiv.org/abs/1909.13719) is also implemented.
+Search for [Fast AutoAugment](https://arxiv.org/abs/1905.00397) using [AutoTorch](http://autotorch.org/). [AutoAugment](https://arxiv.org/abs/1805.09501) and [RandAugment](https://arxiv.org/abs/1909.13719) are also implemented for comparison.
 
 | model | augment| epoch | Acc | Weights |
 |-------|--------|-------|-----|---------|
 |ResNet-50| baseline | 120 | 76.48 |
+|ResNet-50| AA | 120 | 76.66 |
 |ResNet-50| Fast AA | 120| 76.88 |
 |ResNet-50| baseline | 270| 77.17 |
 |ResNet-50| Fast AA | 270| 77.73 | [link](https://hangzh.s3-us-west-1.amazonaws.com/others/resnet50_fast_aa-3342410e.pth) |
 |ResNet-50| Rand AA | 270| **77.97** | [link](https://hangzh.s3-us-west-1.amazonaws.com/others/resnet50_rand_aug-e38097c7.pth) |
+
+Approaches:
+``
+AA: AutoAugment,
+Fast AA: Fast AutoAugment,
+Rand AA: RandAugment,
+``
 
 Training HP setting:
 ``
@@ -17,13 +25,13 @@ batch size: 512,
 weight decay: 1e-4,
 ``
 
-Fast AA setting:
+Fast AA setting (using random search):
 ``
 K=8, T=1, N=5,
 ``
-40 subpolicies in total.
+resulting 40 subpolicies in total.
 
-RandAug setting:
+RandAug setting (after grid search):
 ``
 n=2, m=12,
 ``
