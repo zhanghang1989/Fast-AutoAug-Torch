@@ -82,14 +82,15 @@ python search_policy.py --reduced-size 60000 --epochs 120 --nfolds 8 --num-trial
 python train.py --dataset imagenet --model resnet50 --lr-scheduler cos --epochs 270 --checkname resnet50_fast_aa --lr 0.025 --batch-size 64 --auto-policy imagenet_policy.at
 ```
 
-## Auto Augment and RandomAugment
+## Other Methods
 
 ### Training with AutoAugment policy
-This repo only enables training with searched policy from the original paper. 
+For AutoAugment we only enable training with searched policy from the original paper.
 
 ```bash
 # download the policy
 wget https://hangzh.s3-us-west-1.amazonaws.com/others/aa_policy.at
+# start the training
 python train.py --dataset imagenet --model resnet50 --lr-scheduler cos --epochs 270 --checkname resnet50_fast_aa --lr 0.025 --batch-size 64 --auto-policy  aa_policy.at
 ```
 
@@ -97,4 +98,3 @@ python train.py --dataset imagenet --model resnet50 --lr-scheduler cos --epochs 
 ```bash
 python train.py --dataset imagenet --model resnet50 --lr-scheduler cos --epochs 270 --checkname resnet50_rand_aug --lr 0.025 --batch-size 64 --rand-aug
 ```
-
