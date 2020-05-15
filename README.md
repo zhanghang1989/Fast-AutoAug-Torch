@@ -2,7 +2,7 @@
 
 Search for [Fast AutoAugment](https://arxiv.org/abs/1905.00397) using [AutoTorch](http://autotorch.org/). [AutoAugment](https://arxiv.org/abs/1805.09501) and [RandAugment](https://arxiv.org/abs/1909.13719) are also implemented for comparison. 
 
-This example will be used in the tutorial on [From HPO to NAS: Automated Deep Learning](https://hangzhang.org/CVPR2020/) at CVPR 2020.
+This example and [Search for RegNet](https://github.com/zhanghang1989/RegNet-Search-PyTorch) will be used in the tutorial on [From HPO to NAS: Automated Deep Learning](https://hangzhang.org/CVPR2020/) at CVPR 2020.
 
 | model | augment| epoch | Acc | weights |
 |-------|--------|-------|-----|---------|
